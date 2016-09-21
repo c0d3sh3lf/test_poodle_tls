@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # Script to check for POODLE_TLS using modified tlslite library
 # See http://www.exploresecurity.com/testing-for-poodle_tls-manually/
-# Version 0.1
+# Version 0.2
 # Author: Jerome Smith | www.exploresecurity.com | @exploresecurity
+# Version Modification: Sumit Shrivastava | @invad3rsam
+# Changelog:
+# - Added an if condition to remove the exceptions.typeError
 
 import sys
 from socket import *
@@ -10,16 +13,17 @@ from tlslite.api import *
 
 def __connect(hostname, check_poodle_tls):
     sock = socket.socket(AF_INET, SOCK_STREAM)
-    sock.connect((hostname, 443))
-    connection = TLSConnection(sock, check_poodle_tls)
-    settings = HandshakeSettings()
-    settings.cipherNames = ["aes256", "aes128", "3des"] # Only use block ciphers
-    settings.minVersion = (3,1) # TLSv1.0
-    connection.handshakeClientCert(settings=settings)
-    connection.write("GET / HTTP/1.1\nHost: " + hostname + "\n\n")
+    sock.connect((str(hostname), 443))
+    if check_poodle_tls:
+        connection = TLSConnection(sock)
+        settings = HandshakeSettings()
+        settings.cipherNames = ["aes256", "aes128", "3des"] # Only use block ciphers
+        settings.minVersion = (3,1) # TLSv1.0
+        connection.handshakeClientCert(settings=settings)
+        connection.write("GET / HTTP/1.1\nHost: " + hostname + "\n\n")
     # data = connection.read()
     # print data
-    connection.close()
+        connection.close()
 
 if len(sys.argv) != 2:
     print "Hostname required as an argument"
@@ -29,7 +33,7 @@ try:
     print "Attempting a normal TLS connection"
     __connect(sys.argv[1], False)
 except:
-    err = sys.exc_info()[0]
+    err = sys.exc_info()
     print "- this failed with the error", err
 try:
     print "Attempting a POODLE-style TLS connection"
