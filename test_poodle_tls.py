@@ -4,7 +4,7 @@
 # Version 0.2
 # Author: Jerome Smith | www.exploresecurity.com | @exploresecurity
 # Version Modification: Sumit Shrivastava | @invad3rsam
-# Changelog:
+# Changelog 0.2:
 # - Added an if condition to remove the exceptions.typeError
 
 import sys
